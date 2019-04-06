@@ -6,38 +6,41 @@ function makeNew(req, res, next) {
   
   let URLtoShorten = req.body.url;
   shortenURL(URLtoShorten, (err, returnJSON) => {
-    res.json(returnJSON);
+    if(err === 0) {
+      res.json(returnJSON);
+    } else {
+      res.json({error: err})
+    }
     next();
   });
 }
 
 function shortenURL(newURL, done) {
-  let returnJSON = {};
-  
+    
   dns.lookup(newURL, err => { 
     if(err !== 0) { // we have a problem
-      return { error: 'Invalid URL. Error: ' + err };
-    }
-    
-    URLModel.findOne({ url: newURL }).exec()
-      .then(data => {
-        if(data !== {}) { // we already have a record for this url
-          returnJSON = { url: data.url, shortID: data.shortID };
-          return Promise.reject("Duplicate");
-        }
-        
-        return newShortID = URLModel.countDocuments({}).exec();
-      })
-      .then(count => {
-        returnJSON = { url: newURL, shortID: count }
-      })
-      .catch(err => {
-        if(err === "Duplicate") {
-          done(null, returnJSON)
-        } else {
-          done(err, returnJSON)
-        }
-      });
+      done(0, { error: 'Invalid URL. Error: ' + err });
+    } else {    
+      URLModel.findOne({ url: newURL }).exec()
+        .then(maybeDuplicate => {
+          if(maybeDuplicate !== {}) { // we already have a record for this url
+            let repeat = { url: maybeDuplicate.url, shortID: maybeDuplicate.shortID };
+            return Promise.reject({ duplicate: repeat });
+          }
+        })
+        .then(() => {        
+          return URLModel.countDocuments({}).exec();
+        })
+        .then(count => {
+          returnJSON = { url: newURL, shortID: count }
+        })
+        .catch(err => {
+          if(err.duplicate !== {}) {
+            done(null, err.duplicate)
+          } else {
+            done(err)
+          }
+        });
         
           
     
