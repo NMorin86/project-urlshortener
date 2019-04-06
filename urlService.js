@@ -76,27 +76,25 @@ function shortenURL(newURL, done) {
 }
 
 function forward(req, res, next) {
-  console.log("###################\n# Forwarding shortURL: ", req.path);
+  console.log("######################\n# Forwarding shortURL: ", req.path);
   
   let shortIDstr = req.path.split('/')[3];
   let shortID = parseInt(shortIDstr, 10);
-  console.log("shortID is ", shortID, ", shortID === NaN is ", shortID === NaN, ", shortID == NaN is ", shortID == NaN, ", shortID === Number.NaN is ", shortID === Number.NaN)
-  
-  if(shortID === NaN) {
+    
+  if(isNaN(shortID)) {
     // abort!
     console.log("parseInt failed, aborting");
     res.send("Invalid shortID: " + shortIDstr);
-    //next();
     return;
   }
   
   console.log("ID resolved as int: ", shortID);
   getPath(shortID)
     .then(path => {
-      console.log("Returned path: ", path);
-      res.send("path: " + path);
+      console.log("Redirecting: ", path);
+      res.redirect(path);
     })
-
+  
 }
 
 function getPath(shortID) {
@@ -118,7 +116,6 @@ function getPath(shortID) {
       console.log("In .catch block: ", err);
       return err + ": " + shortID;
     });
-    
   
   return URL;
 }
