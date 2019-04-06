@@ -79,38 +79,48 @@ function forward(req, res, next) {
   console.log("###################\n# Forwarding shortURL: ", req.path);
   
   let shortIDstr = req.path.split('/')[3];
+  let shortID;
+  
   try {
-    let shortID = parseInt(shortIDstr, 10);
-    console.log("ID resolved as int: ", shortID);
-    resolveShortID(res, shortID);
+    shortID = parseInt(shortIDstr, 10);
+  } catch(err) {
+    console.log("In catch block: " + err);
+    res.send("Invalid shortID: " + shortIDstr);
+    next();
+    return;
   }
-  catch(err) {
-    res.send(err + ": " + shortIDstr);
-  } finally {  
-  next();
-  }
+  
+  console.log("ID resolved as int: ", shortID);
+  getPath(shortID)
+    .then(path => {
+      console.log("Returned path: ", path);
+      res.send("path: " + path);
+    })
+
 }
 
-function resolveShortID(res, shortID) {
+function getPath(shortID) {
+  let URL = 
   URLModel.findOne({shortID: shortID}).exec()
     .then((doc) => {
       console.log("Doc found by shortID: ", doc);
-      if(doc === undefined) {
+      if(doc === null) {
         // Doc not found, throw some shit
         console.log("Doc doesn't exist, throwing");
-        //throw("ShortID not found")
+        throw("ShortID not found")
       }
-      // All good, forward client 
-      console.log("Forwarding client: ", doc.url);
-      res.send(doc.url);
+      // All good, return forwarding URL 
+      console.log("Returning URL: ", doc.url);
+      return doc.url;
     })
-    /*
     // Junk in, error out
     .catch(err => { 
       console.log("In .catch block: ", err);
-      res.send(err + ": " + shortID);
+      return err + ": " + shortID;
     });
-    */
+    
+  
+  return URL;
 }
   
 
