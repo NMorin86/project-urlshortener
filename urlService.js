@@ -22,8 +22,11 @@ function shortenURL(newURL) {
       .then(data => {
         if(data !== {}) { // we already have a record for this url
           returnJSON = { url: data.url, shortID: data.shortID };
-        } else {
-          let newShortURL = new URLModel({ url: newURL });
+          return Promise.reject({ err: "record already exists" });
+        }
+        
+        return newShortID = URLModel.countDocuments(
+        
           
     
   })
