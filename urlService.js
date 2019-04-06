@@ -81,14 +81,31 @@ function forward(req, res, next) {
   let shortIDstr = req.path.split('/')[3];
   try {
     let shortID = parseInt(shortIDstr, 10);
-    resolveShortID
+    console.log("ID resolved as int: ", shortID);
+    resolveShortID(res, shortID);
   }
   catch(err) {
-    res.send("Invalid path! " + shortIDstr);
-  }
-  
+    res.send(err + ": " + shortIDstr);
+  } finally {  
   next();
+  }
 }
+
+function resolveShortID(res, shortID) {
+  URLModel.findOne({shortID: shortID}).exec()
+    .then((doc) => {
+      console.log("Doc found by shortID: ", doc);
+      if(doc === undefined) {
+        // Doc not found, throw some shit
+        throw("ShortID not found")
+      }
+      // All good, forward client 
+      console.log("Forwarding client: ", doc.url);
+      res.redirect(doc.url);
+    })
+    .catch(err => {throw err});      
+}
+  
 
 let urlSchema = new mongoose.Schema({
   url: { type: String, required: true, unique: true },
