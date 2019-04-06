@@ -97,13 +97,20 @@ function resolveShortID(res, shortID) {
       console.log("Doc found by shortID: ", doc);
       if(doc === undefined) {
         // Doc not found, throw some shit
-        throw("ShortID not found")
+        console.log("Doc doesn't exist, throwing");
+        //throw("ShortID not found")
       }
       // All good, forward client 
       console.log("Forwarding client: ", doc.url);
-      res.redirect(doc.url);
+      res.send(doc.url);
     })
-    .catch(err => {throw err});      
+    /*
+    // Junk in, error out
+    .catch(err => { 
+      console.log("In .catch block: ", err);
+      res.send(err + ": " + shortID);
+    });
+    */
 }
   
 
