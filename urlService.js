@@ -2,10 +2,10 @@ let dns = require('dns').promises;
 let mongoose = require('mongoose');
 
 function makeNew(req, res, next) {
-  
   console.log("###################\n# New url request: ", req.body.url);
   
   let URLtoShorten = req.body.url;
+  
   shortenURL(URLtoShorten, (err, returnJSON) => {
     if(err === null) {
       res.json(returnJSON);
@@ -17,15 +17,15 @@ function makeNew(req, res, next) {
 }
 
 function shortenURL(newURL, done) {
-  // Trim protocol, dns.lookup squawks about it otherwise
-  newURL = newURL.replace(/^https?:\/\//i, '')
-  console.log("Trimmed url: ", newURL);
+  // Trim protocol and path, dns.lookup can't resolve it otherwise
+  let trimmedURL = newURL.replace(/^https?:\/\//i, '').replace(/\/.*/, '')
+  console.log("Trimmed url: ", trimmedURL);
   
-  dns.lookup(newURL)
+  dns.lookup(trimmedURL)
     .then(() => {    
       // if lookup throws an error, catch it at the bottom
       // Check if we already have this URL saved
-      console.log("Lookingin DB for dupe, url: ", newURL);
+      console.log("Looking in DB for dupe, url: ", newURL);
       return URLModel.findOne({ url: newURL }).exec()
     })
     
@@ -61,8 +61,13 @@ function shortenURL(newURL, done) {
     .catch(err => {
       console.log("Catching err: ", err);
       if(err.duplicate !== undefined) {
+        // Return the dupe doc
         console.log("Returning duplicate doc: ", err.duplicate);
         done(null, err.duplicate)
+      } else if(err.code === 'ENOTFOUND') {
+        // dns.lookup failed to resolve url
+        console.log("Lookup failed to resolve host")
+        done(null, { error: "URL host not found" });
       } else {
         console.log("Throwing unspecificed error");
         done(err)
