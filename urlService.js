@@ -95,6 +95,11 @@ function forward(req, res, next) {
       console.log("Redirecting: ", fullPath);
       res.redirect(fullPath);
     })
+    // Junk in, error out
+    .catch(err => { 
+      console.log("In .catch block: ", err);
+      res.send(err + ": " + shortID) 
+    });
   
 }
 
@@ -104,7 +109,7 @@ function getPath(shortID) {
     .then((doc) => {
       console.log("Doc found by shortID: ", doc);
       if(doc === null) {
-        // Doc not found, throw some shit
+        // Doc not found, throw
         console.log("Doc doesn't exist, throwing");
         throw("ShortURL not found")
       }
