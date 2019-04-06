@@ -5,12 +5,13 @@ function makeNew(req, res, next) {
   console.log("In makenew: ", req.body.url);
   
   let URLtoShorten = req.body.url;
-  let returnJSON = shortenURL(URLtoShorten);
-  res.json(returnJSON);
-  next();
+  shortenURL(URLtoShorten, (err, returnJSON) => {
+    res.json(returnJSON);
+    next();
+  });
 }
 
-function shortenURL(newURL) {
+function shortenURL(newURL, done) {
   let returnJSON = {};
   
   dns.lookup(newURL, err => { 
@@ -22,10 +23,21 @@ function shortenURL(newURL) {
       .then(data => {
         if(data !== {}) { // we already have a record for this url
           returnJSON = { url: data.url, shortID: data.shortID };
-          return Promise.reject({ err: "record already exists" });
+          return Promise.reject("Duplicate");
         }
         
-        return newShortID = URLModel.countDocuments(
+        return newShortID = URLModel.countDocuments({}).exec();
+      })
+      .then(count => {
+        returnJSON = { url: newURL, shortID: count }
+      })
+      .catch(err => {
+        if(err === "Duplicate") {
+          done(null, returnJSON)
+        } else {
+          done(err, returnJSON)
+        }
+      });
         
           
     
