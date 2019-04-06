@@ -18,7 +18,13 @@ function shortenURL(newURL) {
       return { error: 'Invalid URL. Error: ' + err };
     }
     
-    if(URLModel.findOne({ url: newURL }).exec
+    URLModel.findOne({ url: newURL }).exec()
+      .then(data => {
+        if(data !== {}) { // we already have a record for this url
+          returnJSON = { url: data.url, shortID: data.shortID };
+        } else {
+          let newShortURL = new URLModel({ url: newURL });
+          
     
   })
   
