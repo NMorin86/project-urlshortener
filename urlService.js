@@ -76,6 +76,16 @@ function shortenURL(newURL, done) {
 }
 
 function forward(req, res, next) {
+  console.log("###################\n# Forwarding shortURL: ", req.path);
+  
+  let shortIDstr = req.path.split('/')[3];
+  try {
+    let shortID = parseInt(shortIDstr, 10);
+    resolveShortID
+  }
+  catch(err) {
+    res.send("Invalid path! " + shortIDstr);
+  }
   
   next();
 }
