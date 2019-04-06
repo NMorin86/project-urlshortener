@@ -17,7 +17,10 @@ function makeNew(req, res, next) {
 }
 
 function shortenURL(newURL, done) {
-  console.log("In shorten: ", newURL);    
+  // Trim protocol, dns.lookup squawks about it otherwise
+  newURL = newURL.replace(/^https?:\/\//i, '')
+  console.log("Trimmed url: ", newURL);
+  
   dns.lookup(newURL)
     .then(() => {    
       // if lookup throws an error, catch it at the bottom
@@ -57,7 +60,7 @@ function shortenURL(newURL, done) {
   
     .catch(err => {
       console.log("Catching err: ", err);
-      if(err.duplicate !== null) {
+      if(err.duplicate !== undefined) {
         console.log("Returning duplicate doc: ", err.duplicate);
         done(null, err.duplicate)
       } else {
