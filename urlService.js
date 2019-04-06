@@ -18,7 +18,7 @@ function makeNew(req, res, next) {
 
 function shortenURL(newURL, done) {
   // Trim protocol and path, dns.lookup can't resolve it otherwise
-  let trimmedURL = newURL.replace(/^https?:\/\//i, '').replace(/\/.*/, '')
+  let trimmedURL = newURL.replace(/^https?:\/\//i, '').replace(/\/.*/, '').trim();
   console.log("Trimmed url: ", trimmedURL);
   
   dns.lookup(trimmedURL)
@@ -84,15 +84,16 @@ function forward(req, res, next) {
   if(isNaN(shortID)) {
     // abort!
     console.log("parseInt failed, aborting");
-    res.send("Invalid shortID: " + shortIDstr);
+    res.send("Invalid shorturl: " + shortIDstr);
     return;
   }
   
   console.log("ID resolved as int: ", shortID);
   getPath(shortID)
     .then(path => {
-      console.log("Redirecting: ", path);
-      res.redirect(path.match(/^https?:\/\//i) ? '' : "https://" + path);
+      let fullPath = (/^https?:\/\//i.test(path) ? '' : "https://") + path;
+      console.log("Redirecting: ", fullPath);
+      res.redirect(fullPath);
     })
   
 }
@@ -105,18 +106,13 @@ function getPath(shortID) {
       if(doc === null) {
         // Doc not found, throw some shit
         console.log("Doc doesn't exist, throwing");
-        throw("ShortID not found")
+        throw("ShortURL not found")
       }
       // All good, return forwarding URL 
       console.log("Returning URL: ", doc.url);
       return doc.url;
     })
-    // Junk in, error out
-    .catch(err => { 
-      console.log("In .catch block: ", err);
-      return err + ": " + shortID;
-    });
-  
+      
   return URL;
 }
   
