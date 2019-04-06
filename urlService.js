@@ -79,14 +79,14 @@ function forward(req, res, next) {
   console.log("###################\n# Forwarding shortURL: ", req.path);
   
   let shortIDstr = req.path.split('/')[3];
-  let shortID;
+  let shortID = parseInt(shortIDstr, 10);
+  console.log("shortID is ", shortID, ", shortID === NaN is ", shortID === NaN, ", shortID == NaN is ", shortID == NaN, ", shortID === Number.NaN is ", shortID === Number.NaN)
   
-  try {
-    shortID = parseInt(shortIDstr, 10);
-  } catch(err) {
-    console.log("In catch block: " + err);
+  if(shortID === NaN) {
+    // abort!
+    console.log("parseInt failed, aborting");
     res.send("Invalid shortID: " + shortIDstr);
-    next();
+    //next();
     return;
   }
   
