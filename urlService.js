@@ -92,7 +92,7 @@ function forward(req, res, next) {
   getPath(shortID)
     .then(path => {
       console.log("Redirecting: ", path);
-      res.redirect(path);
+      res.redirect(path.match(/^https?:\/\//i) ? '' : "https://" + path);
     })
   
 }
